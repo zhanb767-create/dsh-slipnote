@@ -1,0 +1,74 @@
+{
+  "name": "dsh-slipnote",
+  "version": "0.2.0",
+  "type": "module",
+  "license": "MIT",
+  "displayName": "拾笺",
+  "description": "拾笺：DeepSeek Harness 的备忘录与分阶段计划面板，支持对话快照、图片、标签、搜索与送入输入框。",
+  "author": "zhanb767-create",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhanb767-create/dsh-slipnote.git"
+  },
+  "homepage": "https://github.com/zhanb767-create/dsh-slipnote#readme",
+  "bugs": {
+    "url": "https://github.com/zhanb767-create/dsh-slipnote/issues"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "notes",
+    "planner",
+    "memo",
+    "sidebar"
+  ],
+  "engines": {
+    "dsh": ">=0.2.2-0 <0.3.0-0"
+  },
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "src/*.js",
+    "locale/*.json",
+    "icon.svg",
+    "assets/icon-180.png",
+    "scripts/*.ps1",
+    "README.md",
+    "PUBLISHING.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md",
+    "DESIGN.md",
+    "安装.cmd",
+    "卸载.cmd"
+  ],
+  "scripts": {
+    "test": "node --test tests/"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-workspace"
+      ]
+    }
+  }
+}

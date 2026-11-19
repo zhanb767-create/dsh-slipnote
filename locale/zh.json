@@ -1,0 +1,20 @@
+{
+  "meta": {
+    "title": "拾笺",
+    "description": "拾笺：在侧栏管理备忘录与分阶段计划；支持对话快照、标签、搜索、进度与投递到新对话。"
+  },
+  "nav": "拾笺",
+  "title": "拾笺",
+  "tab.notes": "备忘录",
+  "tab.plans": "计划书",
+  "message.saveToMemo": "添加到备忘录",
+  "message.savingToMemo": "正在添加…",
+  "message.savedToMemo": "已添加到备忘录",
+  "message.saveFailed": "添加失败",
+  "editor.images": "图片",
+  "note.image": "图片备忘录",
+  "action.addImage": "添加图片",
+  "image.tooLarge": "图片太大，请换一张较小的图片。",
+  "toast.insertFailed": "送入输入框失败，请先打开一个会话后重试",
+  "toast.imageOnly": "这是一条纯图片备忘录。先补一句文字说明，再送入输入框。"
+}

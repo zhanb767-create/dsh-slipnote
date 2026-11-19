@@ -1,0 +1,20 @@
+{
+  "meta": {
+    "title": "Shijian",
+    "description": "Shijian: memoranda and staged plans in the sidebar, with conversation snapshots, tags, search, progress, and hand-off to a new conversation."
+  },
+  "nav": "Shijian",
+  "title": "Shijian",
+  "tab.notes": "Memoranda",
+  "tab.plans": "Plans",
+  "message.saveToMemo": "Add to memo",
+  "message.savingToMemo": "Adding…",
+  "message.savedToMemo": "Added to memo",
+  "message.saveFailed": "Could not add",
+  "editor.images": "Images",
+  "note.image": "Image memo",
+  "action.addImage": "Add image",
+  "image.tooLarge": "That image is too large. Try a smaller one.",
+  "toast.insertFailed": "Could not insert into the composer. Open a session and retry.",
+  "toast.imageOnly": "This is an image-only memo. Add a line of text before inserting it."
+}

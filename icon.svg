@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Memoranda and plans">
+  <rect x="7" y="5" width="50" height="54" rx="11" fill="#3f6ff0"/>
+  <path d="M20 20h24M20 30h24M20 40h14" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="47" cy="45" r="9" fill="#9fe8bf"/>
+  <path d="m42.5 45.2 3.2 3.2 6.4-7" fill="none" stroke="#155c38" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
