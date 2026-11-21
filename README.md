@@ -130,7 +130,9 @@ $DSH_HOME/dsh-memo/backups/
 
 ## HTTP API
 
-宿主半边注册一个 loopback-only 的 prefix 路由：
+宿主半边注册一个 `/api/memo` prefix 路由。每个请求先经过 DSH 的
+`ctx.connection.requestRejection`（Host/Origin 栅栏 + 浏览器登录），再要求
+来源地址是 loopback：
 
 ```text
 GET    /api/memo/bootstrap
@@ -150,7 +152,8 @@ GET    /api/memo/export?format=json|md
 POST   /api/memo/import
 ```
 
-- 非 loopback 请求返回 `403`。
+- 未登录 DSH 的请求返回 `401`；Host/Origin 不可信、非 loopback 或栅栏抛异常的请求返回 `403`。
+- 栅栏不可用时 fail-closed，返回 `503`。
 - 请求体上限 24 MB（图片以 data URL 随笔记保存）。
 - 统一响应：`{ "ok": true, "data": ... }` 或 `{ "ok": false, "error": { "code", "message" } }`。
 
@@ -167,7 +170,7 @@ npm test
 
 - `tests/store.test.js`：持久化读写、损坏恢复、只读版本、导入导出。
 - `tests/schema.test.js`：字段校验、图片与上限。
-- `tests/routes.test.js`：路由、loopback 围栏、图片、状态码。
+- `tests/routes.test.js`：路由、DSH 访问栅栏、loopback、图片、状态码。
 - `tests/mount.test.js`：防重复挂载。
 - `tests/client.test.js`：模块 id、三个插槽注册、面板空数据渲染、文本提取、图片本地笔记。
 - `tests/hygiene.test.js`：无第三方运行时依赖、无 Python、安装脚本存在。

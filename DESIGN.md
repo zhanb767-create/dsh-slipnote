@@ -1,12 +1,15 @@
 # 拾笺（dsh-slipnote）设计方案
 
-> 状态：**已实现并安装（0.2.0）**。按交接材料 C9，本文先记录可行性、目录结构与数据模型，随后按此实现。
+> 状态：**已实现并安装（0.2.1）**。按交接材料 C9，本文先记录可行性、目录结构与数据模型，随后按此实现。
 >
 > 0.1.1 增补：侧栏/面板显示名改为「拾笺」；助手消息底部操作栏新增「添加到备忘录」按钮。
 >
 > 0.2.0 增补：为发布到 DSH Market，包名、ModuleLoader id、侧栏/面板 id 改为
 > `dsh-slipnote`；数据目录仍保留 `$DSH_HOME/dsh-memo` 以兼容旧笔记。文中其余
 > `dsh-memo` 字样是当时的设计记录。
+>
+> 0.2.1 安全修复：所有 `/api/memo` 请求先走 `ctx.connection.requestRejection`；
+> 未登录 `401`、不可信来源 `403`、栅栏缺失 `503`，之后仍保留 loopback 检查。
 >
 > 目标宿主：DeepSeek Harness `0.2.2-rc.1`，Profile `C:\Users\24281\.dsh\profiles\desktop`。
 >
@@ -115,7 +118,7 @@ ctx.slots.register({
 │  ├─ MemoStore：notes.json / plans.json / prefs.json                 │
 │  ├─ schema 校验 + schemaVersion 迁移                                │
 │  ├─ 原子写（.tmp → rename） + 损坏文件备份                            │
-│  ├─ /api/memo 路由（loopback 围栏 + 24MB body + 方法校验）              │
+│  ├─ /api/memo 路由（DSH 访问栅栏 + loopback + 24MB body + 方法校验）   │
 │  └─ mount-once 全局守卫（npm/link 双装时防止重复注册路由）              │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -492,7 +495,9 @@ $DSH_HOME/dsh-memo/
 
 ## 4. HTTP API
 
-前缀：`/api/memo`。所有请求仅接受 loopback；非 loopback 直接 `403`。响应统一：
+前缀：`/api/memo`。每个请求先经过 `ctx.connection.requestRejection(req)`：
+未登录 `401`、不可信来源 `403`、栅栏异常 `403`、栅栏缺失 `503`（0.2.1 安全修复）。
+通过后再要求 loopback；非 loopback 直接 `403`。响应统一：
 
 ```json
 { "ok": true, "data": {} }
@@ -730,7 +735,7 @@ const t = ctx.locale.bind(NS)
 | 文件 | 覆盖 |
 |---|---|
 | `tests/store.test.js` | 新建/读取/更新/删除；原子写后文件可解析；损坏 JSON → 备份 + 空 store；无 `schemaVersion` 迁移；标签规范化/上限；计划 order 重排与进度 |
-| `tests/routes.test.js` | 重复路由注册抛错；loopback 围栏；405；404；400 非法 JSON；413 超 body；CRUD；导出 JSON/Markdown；导入 merge/replace |
+| `tests/routes.test.js` | 重复路由注册抛错；DSH 访问栅栏 401/403/异常/缺失；loopback；405；404；400 非法 JSON；413 超 body；CRUD；导出 JSON/Markdown；导入 merge/replace |
 | `tests/schema.test.js` | 合法/非法 Note、Plan、Prefs；边界值（200000 字符、20 标签、空步骤） |
 | `tests/mount.test.js` | `vm` 加载 `client.js`，fake `window.__ModuleLoader__` / `React` / `ctx`；断言 `factory` 返回 `inject/apply`；`apply` 不抛异常；注册 `main[key=dsh-memo]` 与 `sidebar.panellist[id=dsh-memo]`；label thunk 返回字符串；main 渲染函数返回元素；执行 Panel 初始渲染（fake hooks）不抛异常 |
 | `tests/hygiene.test.js` | 包内无 `.py`；`dependencies` 为空；`peerDependencies` 仅 react/react-dom；`client.js` 有 `__ModuleLoader__.load` 且 id 为 `dsh-memo`；`cordis.patch.yml` id/name 一致 |

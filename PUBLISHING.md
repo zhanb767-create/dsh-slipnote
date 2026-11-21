@@ -49,7 +49,7 @@
 ```jsonc
 {
   "name": "dsh-slipnote",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "license": "MIT",
   "displayName": "拾笺",
@@ -191,8 +191,10 @@ dsh plugin --profile desktop add github:Tim-ReJet/dsh-plugin-doctor
 | 包名去冲突（`dsh-slipnote`） | ✅ 已改 |
 | `repository` / `homepage` / `bugs` | ✅ 已填 |
 | `engines.dsh` | ✅ 已加 |
-| GitHub 仓库 + `dsh-plugin` topic | ❌ 待创建 |
-| 目录 YAML + PR | ❌ 待提交 |
+| GitHub 仓库 + `dsh-plugin` topic | ✅ 已创建 |
+| 目录 YAML + PR | ✅ PR #17282 已合并 |
+| HTTP 访问检查 | ✅ 0.2.1 已接入 `ctx.connection.requestRejection` |
+| 移除目录安全警告句的 PR | ❌ 待提交 |
 | 实机截图 | ⚠️ 可选，当前没有 |
 
 最后一项“实机截图”需要重启 DSH 后从真实面板截取；不要用测试 fixture 代替。

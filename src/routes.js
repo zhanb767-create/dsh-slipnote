@@ -43,6 +43,34 @@ function methodNotAllowed(res, allowed) {
   )
 }
 
+/**
+ * Ask DSH's Connection service whether this request may reach a route that is
+ * not part of the host's own /api surface. The service applies the Host/Origin
+ * fence and the browser login together, so a page on another origin and a
+ * browser without a DSH session are both stopped here. A missing gate or a
+ * gate that throws fails closed: this route is not allowed to become the one
+ * unguarded way into the on-disk notes.
+ */
+function rejectUnadmitted(requestRejection, req, res) {
+  if (typeof requestRejection !== 'function') {
+    fail(res, 503, 'GATE_UNAVAILABLE', 'DSH connection gate is unavailable.')
+    return true
+  }
+  let status
+  try {
+    status = requestRejection(req)
+  } catch {
+    status = 403
+  }
+  if (status === undefined) return false
+  if (status === 401) {
+    fail(res, 401, 'UNAUTHORIZED', '请先登录 DSH：重新打开 DSH 启动时打印的网址。')
+    return true
+  }
+  fail(res, 403, 'FORBIDDEN', '请求来自不受信任的来源，已被拒绝。')
+  return true
+}
+
 function readBody(req) {
   const declared = Number(req.headers?.['content-length'] ?? 0)
   if (Number.isFinite(declared) && declared > MAX_BODY_BYTES) {
@@ -224,7 +252,9 @@ async function dispatch(store, method, segments, url, req, res, now) {
   if (tail.length >= 0) return fail(res, 404, 'NOT_FOUND', 'Unknown route.')
 }
 
-export async function handleMemoRequest(store, req, res) {
+export async function handleMemoRequest(store, req, res, { requestRejection } = {}) {
+  if (rejectUnadmitted(requestRejection, req, res)) return
+
   if (!isLoopbackRequest(req)) {
     return fail(res, 403, 'FORBIDDEN', 'Only loopback requests are allowed.')
   }
@@ -261,10 +291,10 @@ export async function handleMemoRequest(store, req, res) {
   }
 }
 
-export function createMemoRoute(store) {
+export function createMemoRoute(store, options = {}) {
   return {
     kind: 'prefix',
     path: MEMO_API_PREFIX,
-    handler: (req, res) => handleMemoRequest(store, req, res),
+    handler: (req, res) => handleMemoRequest(store, req, res, options),
   }
 }

@@ -5,9 +5,11 @@ import { handleMemoRequest, createMemoRoute, MAX_BODY_BYTES } from '../src/route
 import { MemoStore } from '../src/store.js'
 import { jsonBody, makeRequest, makeResponse, makeTempDir, removeTempDir } from './helpers.js'
 
-async function call(store, options) {
+const allowRequest = () => undefined
+
+async function call(store, options, requestRejection = allowRequest) {
   const res = makeResponse()
-  await handleMemoRequest(store, makeRequest(options), res)
+  await handleMemoRequest(store, makeRequest(options), res, { requestRejection })
   return { res, body: jsonBody(res) }
 }
 
@@ -109,6 +111,37 @@ test('non-loopback requests are forbidden', async () => {
     })
     assert.equal(res.statusCode, 403)
     assert.equal(body.error.code, 'FORBIDDEN')
+  } finally {
+    removeTempDir(dir)
+  }
+})
+
+test('DSH connection gate refuses unauthenticated, untrusted, and throwing callers', async () => {
+  const dir = makeTempDir()
+  try {
+    const store = new MemoStore({ dir })
+    store.load()
+    let seen
+    const unauthorized = await call(store, { url: '/api/memo/bootstrap' }, (request) => {
+      seen = request
+      return 401
+    })
+    assert.equal(seen.url, '/api/memo/bootstrap')
+    assert.equal(unauthorized.res.statusCode, 401)
+    assert.equal(unauthorized.body.error.code, 'UNAUTHORIZED')
+
+    const forbidden = await call(store, { url: '/api/memo/bootstrap' }, () => 403)
+    assert.equal(forbidden.res.statusCode, 403)
+    assert.equal(forbidden.body.error.code, 'FORBIDDEN')
+
+    const throwing = await call(store, { url: '/api/memo/bootstrap' }, () => {
+      throw new Error('gate bug')
+    })
+    assert.equal(throwing.res.statusCode, 403)
+
+    const missing = await call(store, { url: '/api/memo/bootstrap' }, null)
+    assert.equal(missing.res.statusCode, 503)
+    assert.equal(missing.body.error.code, 'GATE_UNAVAILABLE')
   } finally {
     removeTempDir(dir)
   }

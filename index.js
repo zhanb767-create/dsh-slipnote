@@ -3,7 +3,7 @@ import { createMemoRoute } from './src/routes.js'
 import { MemoStore } from './src/store.js'
 
 export const name = 'dsh-slipnote'
-export const inject = ['webServer']
+export const inject = ['webServer', 'connection']
 
 /**
  * Host half. The browser half talks to this through /api/memo; no third-party
@@ -15,7 +15,11 @@ export function apply(ctx) {
     return ctx.effect(() => {
       const store = new MemoStore()
       store.load()
-      const disposeRoute = ctx.webServer.register(createMemoRoute(store))
+      const disposeRoute = ctx.webServer.register(
+        createMemoRoute(store, {
+          requestRejection: (request) => ctx.connection.requestRejection(request),
+        }),
+      )
       return () => {
         disposeRoute?.()
       }

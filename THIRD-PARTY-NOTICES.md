@@ -1,6 +1,6 @@
 # Third-party notices
 
-`dsh-slipnote` 0.2.0 is original code. No source text, CSS, or assets from another
+`dsh-slipnote` 0.2.1 is original code. No source text, CSS, or assets from another
 project are copied into this package.
 
 The following projects were consulted for public interfaces, behavior, and

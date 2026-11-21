@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 
 import { apply } from '../index.js'
 import { mountOnce } from '../src/mount-once.js'
-import { makeTempDir, removeTempDir } from './helpers.js'
+import { makeRequest, makeResponse, makeTempDir, removeTempDir } from './helpers.js'
 
 const MOUNTED = Symbol.for('dsh-slipnote.mounted')
 
@@ -23,13 +23,14 @@ test('mountOnce runs the body exactly once and resets after a throw', () => {
   delete globalThis[MOUNTED]
 })
 
-test('apply registers one route only even if the package is mounted twice', () => {
+test('apply registers one route only and wires the DSH connection gate', async () => {
   delete globalThis[MOUNTED]
   const dir = makeTempDir()
   const previous = process.env.DSH_HOME
   process.env.DSH_HOME = dir
   try {
     const routes = []
+    let gateCalls = 0
     const ctx = {
       effect(fn) {
         return fn()
@@ -46,12 +47,23 @@ test('apply registers one route only even if the package is mounted twice', () =
           }
         },
       },
+      connection: {
+        requestRejection() {
+          gateCalls += 1
+          return 401
+        },
+      },
     }
     apply(ctx)
     apply(ctx)
     assert.equal(routes.length, 1)
     assert.equal(routes[0].path, '/api/memo')
     assert.equal(typeof routes[0].handler, 'function')
+
+    const res = makeResponse()
+    await routes[0].handler(makeRequest({ url: '/api/memo/bootstrap' }), res)
+    assert.equal(res.statusCode, 401)
+    assert.equal(gateCalls, 1)
   } finally {
     if (previous === undefined) delete process.env.DSH_HOME
     else process.env.DSH_HOME = previous
